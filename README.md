@@ -53,11 +53,13 @@ python main.py
 
 ```
 JuntarImagensDeDocumentos/
-├── main.py                # Arquivo principal com a interface e lógica
-├── utils/                 # Funções auxiliares (ex: melhorias e cortes)
-├── assets/                # Ícones, imagens e outros recursos
-├── README.md
-└── requirements.txt       # Dependências do projeto
+├── main.py                # Inicializa a aplicação
+├── gui.py                 # Interface gráfica com Tkinter
+├── image_processing.py    # Funções de melhoria de imagem
+├── corner_detection.py    # Lógica de detecção de cantos e bordas
+├── requirements.txt       # Lista de dependências
+├── README.md              # Documentação do projeto
+├── interface_preview.png  # Imagem da interface usada no README
 ```
 
 ## 📃 Licença
