@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from PIL import Image
 from image_processing import ImageProcessor # Importa ImageProcessor
+import os
 
 class CornerDetector:
     """Classe para encapsular a lógica de detecção de cantos de documentos."""
@@ -16,13 +17,33 @@ class CornerDetector:
         img_cv = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
 
         # Redimensiona para processamento mais rápido, mantendo a proporção
-        ratio = image.width / 500.0
-        resized = cv2.resize(img_cv, (500, int(image.height / ratio)))
+        ratio = image.width / 800.0 
+        resized = cv2.resize(img_cv, (800, int(image.height / ratio)))
 
-        # Pré-processamento: escala de cinza, desfoque e detecção de bordas Canny
-        gray = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
+        # Converter para LAB e aplicar CLAHE para realce de contraste
+        lab = cv2.cvtColor(resized, cv2.COLOR_BGR2LAB)
+        l, a, b = cv2.split(lab)
+        clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
+        cl = clahe.apply(l)
+        merged = cv2.merge((cl, a, b))
+        contrast_enhanced = cv2.cvtColor(merged, cv2.COLOR_LAB2BGR)
+
+        # Converter para escala de cinza
+        gray = cv2.cvtColor(contrast_enhanced, cv2.COLOR_BGR2GRAY)
+
+        # Aplicar desfoque leve
         blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-        edged = cv2.Canny(blurred, 75, 200) # Parâmetros Canny ajustados
+
+        # Detecção de bordas
+        edged = cv2.Canny(blurred, 75, 200)
+
+        # --- Adição para salvar a imagem intermediária (edged) ---
+        debug_dir = "./debug_images"
+        os.makedirs(debug_dir, exist_ok=True)
+        debug_image_path = os.path.join(debug_dir, "edged_image.jpg")
+        cv2.imwrite(debug_image_path, edged)
+        print(f"Imagem de bordas salva em: {debug_image_path}")
+        # --------------------------------------------------
 
         # Encontra contornos na imagem com bordas
         contours, _ = cv2.findContours(edged.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
@@ -57,5 +78,11 @@ class CornerDetector:
         # Se nenhum contorno de documento for encontrado, retorna os cantos da imagem inteira
         h, w = image.height, image.width
         return np.array([[0, 0], [w - 1, 0], [w - 1, h - 1], [0, h - 1]], dtype="float32")
+
+
+
+
+
+
 
 
